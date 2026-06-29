@@ -2,7 +2,7 @@
 import anvil.server
 
 # Import the app module to initialize everything
-from . import app
+from . import __init__
 
-# Start the server
-anvil.server.wait_forever()
+# Start the server - DO NOT call anvil.server.connect() here
+# Anvil will handle the connection automatically

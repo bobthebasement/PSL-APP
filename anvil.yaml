@@ -1,21 +1,40 @@
+# Anvil configuration for PSL-APP
+# This file configures the Anvil app settings
+
+# Runtime configuration
 runtime: python3.10
+
+# Server entry point
 start: server_code.app.server
+
+# App name
 name: PSL-APP
+
+# Package name
 package_name: psl_app
+
+# Allow embedding in other sites
 allow_embed: false
+
+# Dependencies
 dependencies:
-  - anvil-extras
-  - anvil-tables
-  - anvil-media
-  - pillow
-  - numpy
-  - requests
-  - opencv-python-headless
-  - dlib
-  - face-recognition
-  - scikit-image
-  - scipy
-services:
-  - name: nvidia_api
-    type: http
-    url: https://build.nvidia.com/moonshotai/kimi-k2.6
+  - name: anvil-extras
+  - name: anvil-tables
+  - name: anvil-media
+  - name: pillow
+  - name: numpy
+  - name: requests
+  - name: opencv-python-headless
+  - name: dlib
+  - name: face-recognition
+  - name: scikit-image
+  - name: scipy
+
+# Services (optional - NVIDIA API will be configured via secrets)
+services: []
+
+# App settings
+app:
+  title: PSL - Photo Scoring League
+  theme: theme.yaml
+  startup_form: MainForm

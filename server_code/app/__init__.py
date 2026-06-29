@@ -13,36 +13,12 @@ from io import BytesIO
 from PIL import Image
 import face_recognition
 import time
-
-# Initialize Anvil server
-anvil.server.connect("PSL-APP")
-
-# Database schema for storing ratings and user data
-@tables.in_app
-class UserRatings(tables.Table):
-    user_id = tables.Column(tables.StringType(), unique=True)
-    email = tables.Column(tables.StringType(), unique=True)
-    created_at = tables.Column(tables.DateTimeType())
-    total_ratings = tables.Column(tables.NumberType())
-    avg_overall_score = tables.Column(tables.NumberType())
-
-@tables.in_app  
-class FaceRating(tables.Table):
-    user_id = tables.Column(tables.StringType())
-    image_data = tables.Column(tables.BlobType())
-    facial_geometry_score = tables.Column(tables.NumberType())
-    feature_proportions_score = tables.Column(tables.NumberType())
-    skin_quality_score = tables.Column(tables.NumberType())
-    dimorphism_score = tables.Column(tables.NumberType())
-    overall_psl_score = tables.Column(tables.NumberType())
-    percentile = tables.Column(tables.NumberType())
-    timestamp = tables.Column(tables.DateTimeType())
-    analysis_data = tables.Column(tables.JsonType())
-    improvements = tables.Column(tables.JsonType())
+import os
 
 # NVIDIA API Configuration
 NVIDIA_API_URL = "https://build.nvidia.com/moonshotai/kimi-k2.6"
-NVIDIA_API_KEY = ""  # Will be configured in Anvil secrets
+# Get API key from Anvil secrets
+NVIDIA_API_KEY = os.environ.get('NVIDIA_API_KEY', '')
 
 # PSL Scoring Weights
 SCORING_WEIGHTS = {
@@ -74,6 +50,11 @@ def calculate_percentile(score):
 def analyze_face_with_nvidia(image_data):
     """Send image to NVIDIA Kimi K2.6 for analysis with AI-generated improvements"""
     try:
+        # Check if API key is available
+        if not NVIDIA_API_KEY or NVIDIA_API_KEY == '':
+            print("NVIDIA API key not configured. Falling back to local analysis.")
+            return analyze_face_locally(image_data)
+        
         image = Image.open(BytesIO(image_data))
         
         # Convert to base64
@@ -133,7 +114,7 @@ def analyze_face_with_nvidia(image_data):
                     ]
                 }
             ],
-            "temperature": 0.3,  # Slightly higher for more creative improvements
+            "temperature": 0.3,
             "max_tokens": 2000
         }
         
@@ -333,7 +314,7 @@ def generate_ai_improvements(fg, fp, sq, dim, landmarks, image):
                 else:
                     improvements.append({
                         "category": "Feature Proportions",
-                        "improvement": "Optimize nose-to-mouth ratio with contouring to achieve better facial feature balance",
+                        "improvement": "Optimize nose-to-mouth proportion with contouring to achieve better facial feature balance",
                         "priority": 2 if len(improvements) > 0 else 1
                     })
             else:
@@ -489,7 +470,8 @@ def analyze_facial_geometry(landmarks, image_shape):
         geometry_score = (symmetry_score * 0.6) + (jawline_score * 0.4)
         return max(0, min(10, geometry_score))
         
-    except:
+    except Exception as e:
+        print(f"Error in facial geometry analysis: {e}")
         return 5.0
 
 def analyze_feature_proportions(landmarks):
@@ -517,7 +499,8 @@ def analyze_feature_proportions(landmarks):
         proportion_score = (eye_symmetry * 0.4) + (eye_width_ratio * 0.3) + 5
         return max(0, min(10, proportion_score))
         
-    except:
+    except Exception as e:
+        print(f"Error in feature proportions analysis: {e}")
         return 5.0
 
 def analyze_skin_quality(image, landmarks):
@@ -547,7 +530,8 @@ def analyze_skin_quality(image, landmarks):
         skin_score = (smoothness_score * 0.7) + (brightness_score * 0.3)
         return max(0, min(10, skin_score))
         
-    except:
+    except Exception as e:
+        print(f"Error in skin quality analysis: {e}")
         return 5.0
 
 def analyze_dimorphism(landmarks, image):
@@ -575,7 +559,8 @@ def analyze_dimorphism(landmarks, image):
         else:
             return 5.0
             
-    except:
+    except Exception as e:
+        print(f"Error in dimorphism analysis: {e}")
         return 5.0
 
 def calculate_overall_psl(facial_geometry, feature_proportions, skin_quality, dimorphism):
@@ -587,6 +572,29 @@ def calculate_overall_psl(facial_geometry, feature_proportions, skin_quality, di
         dimorphism * SCORING_WEIGHTS['dimorphism']
     )
     return overall
+
+# Database schema for storing ratings and user data
+@tables.in_app
+class UserRatings(tables.Table):
+    user_id = tables.Column(tables.StringType(), unique=True)
+    email = tables.Column(tables.StringType(), unique=True)
+    created_at = tables.Column(tables.DateTimeType())
+    total_ratings = tables.Column(tables.NumberType())
+    avg_overall_score = tables.Column(tables.NumberType())
+
+@tables.in_app  
+class FaceRating(tables.Table):
+    user_id = tables.Column(tables.StringType())
+    image_data = tables.Column(tables.BlobType())
+    facial_geometry_score = tables.Column(tables.NumberType())
+    feature_proportions_score = tables.Column(tables.NumberType())
+    skin_quality_score = tables.Column(tables.NumberType())
+    dimorphism_score = tables.Column(tables.NumberType())
+    overall_psl_score = tables.Column(tables.NumberType())
+    percentile = tables.Column(tables.NumberType())
+    timestamp = tables.Column(tables.DateTimeType())
+    analysis_data = tables.Column(tables.JsonType())
+    improvements = tables.Column(tables.JsonType())
 
 @anvil.server.callable
 @anvil.server.background_task
@@ -667,6 +675,7 @@ async def rate_face(image_data):
         }
         
     except Exception as e:
+        print(f"Error in rate_face: {e}")
         return {
             'success': False,
             'error': str(e)
@@ -675,42 +684,55 @@ async def rate_face(image_data):
 @anvil.server.callable
 def get_leaderboard(limit=10):
     """Get top ratings for leaderboard"""
-    ratings = FaceRating.search(
-        tables.sort_by('overall_psl_score', descending=True),
-        tables.limit(limit)
-    )
-    
-    leaderboard = []
-    for rating in ratings:
-        leaderboard.append({
-            'overall_psl_score': rating['overall_psl_score'],
-            'percentile': rating['percentile'],
-            'timestamp': rating['timestamp']
-        })
-    
-    return leaderboard
+    try:
+        ratings = FaceRating.search(
+            tables.sort_by('overall_psl_score', descending=True),
+            tables.limit(limit)
+        )
+        
+        leaderboard = []
+        for rating in ratings:
+            leaderboard.append({
+                'overall_psl_score': rating['overall_psl_score'],
+                'percentile': rating['percentile'],
+                'timestamp': rating['timestamp']
+            })
+        
+        return leaderboard
+    except Exception as e:
+        print(f"Error in get_leaderboard: {e}")
+        return []
 
 @anvil.server.callable
 def get_statistics():
     """Get overall statistics"""
-    all_ratings = FaceRating.search()
-    
-    if len(all_ratings) == 0:
+    try:
+        all_ratings = FaceRating.search()
+        
+        if len(all_ratings) == 0:
+            return {
+                'total_ratings': 0,
+                'avg_overall_score': 0,
+                'highest_score': 0,
+                'lowest_score': 0
+            }
+        
+        scores = [r['overall_psl_score'] for r in all_ratings]
+        
+        return {
+            'total_ratings': len(all_ratings),
+            'avg_overall_score': float(np.mean(scores)),
+            'highest_score': float(np.max(scores)),
+            'lowest_score': float(np.min(scores))
+        }
+    except Exception as e:
+        print(f"Error in get_statistics: {e}")
         return {
             'total_ratings': 0,
             'avg_overall_score': 0,
             'highest_score': 0,
             'lowest_score': 0
         }
-    
-    scores = [r['overall_psl_score'] for r in all_ratings]
-    
-    return {
-        'total_ratings': len(all_ratings),
-        'avg_overall_score': np.mean(scores),
-        'highest_score': np.max(scores),
-        'lowest_score': np.min(scores)
-    }
 
 # Initialize reference dataset on startup
 initialize_reference_dataset()
