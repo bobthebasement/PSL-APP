@@ -1,0 +1,21 @@
+runtime: python3.10
+start: server_code.app.server
+name: PSL-APP
+package_name: psl_app
+allow_embed: false
+dependencies:
+  - anvil-extras
+  - anvil-tables
+  - anvil-media
+  - pillow
+  - numpy
+  - requests
+  - opencv-python-headless
+  - dlib
+  - face-recognition
+  - scikit-image
+  - scipy
+services:
+  - name: nvidia_api
+    type: http
+    url: https://build.nvidia.com/moonshotai/kimi-k2.6

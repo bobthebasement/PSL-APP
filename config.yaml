@@ -1,0 +1,47 @@
+# PSL Application Configuration
+
+# NVIDIA API Configuration
+nvidia:
+  api_url: "https://build.nvidia.com/moonshotai/kimi-k2.6"
+  api_key: ""  # Set this in Anvil secrets
+  model: "kimi-k2.6"
+  timeout: 60
+  max_retries: 3
+
+# Scoring Configuration
+scoring:
+  weights:
+    facial_geometry: 0.35
+    feature_proportions: 0.25
+    skin_quality: 0.20
+    dimorphism: 0.20
+  
+  # Score ranges (0-100)
+  min_score: 0
+  max_score: 100
+
+# Image Processing
+image:
+  max_file_size_mb: 10
+  allowed_formats: ["image/jpeg", "image/png", "image/webp"]
+  min_resolution: [256, 256]
+  max_resolution: [4096, 4096]
+
+# Database
+ database:
+   max_entries: 10000
+   auto_cleanup: true
+   retention_days: 30
+
+# UI Settings
+ui:
+  theme: "black_gold"
+  default_language: "en"
+  show_leaderboard: true
+  max_leaderboard_entries: 10
+
+# Performance
+performance:
+  analysis_timeout: 30
+  cache_results: true
+  max_concurrent_analyses: 5

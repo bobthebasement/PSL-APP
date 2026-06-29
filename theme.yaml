@@ -1,0 +1,142 @@
+# PSL Theme - Black and Gold
+# Custom theme for the PSL application
+
+# Color Palette
+colors:
+  # Primary colors
+  Primary: '#FFD700'
+  Primary Variant: '#FFC107'
+  Primary Light: '#FFF59D'
+  
+  # Secondary colors (for accents)
+  Secondary: '#212121'
+  Secondary Variant: '#424242'
+  
+  # Background colors
+  Background: '#000000'
+  Surface: '#121212'
+  Error: '#FF5252'
+  
+  # Text colors
+  On Primary: '#000000'
+  On Secondary: '#FFFFFF'
+  On Background: '#FFFFFF'
+  On Surface: '#FFFFFF'
+  On Error: '#000000'
+  
+  # Custom colors for PSL
+  PSL Gold: '#FFD700'
+  PSL Gold Light: '#FFE082'
+  PSL Gold Dark: '#FFA000'
+  PSL Black: '#000000'
+  PSL Dark Gray: '#111111'
+  PSL Medium Gray: '#222222'
+  PSL Light Gray: '#444444'
+  PSL Text Gold: '#FFD700'
+  PSL Text Gray: '#CCCCCC'
+
+# Typography
+font:
+  family: 'Montserrat, Roboto, sans-serif'
+  
+# Component Themes
+component_themes:
+  # Buttons
+  Button:
+    background: PSL Gold
+    foreground: PSL Black
+    border: 'none'
+    font:
+      family: 'Montserrat, sans-serif'
+      weight: 600
+    
+  FilledButton:
+    background: PSL Gold
+    foreground: PSL Black
+    border: 'none'
+    
+  OutlinedButton:
+    background: 'transparent'
+    foreground: PSL Gold
+    border: '1px solid PSL Gold'
+    
+  # Cards
+  Card:
+    background: PSL Dark Gray
+    foreground: PSL Text Gold
+    border: '1px solid PSL Gold'
+    
+  # Labels
+  Label:
+    foreground: PSL Text Gray
+    font:
+      family: 'Roboto, sans-serif'
+    
+  Title:
+    foreground: PSL Gold
+    font:
+      family: 'Montserrat, sans-serif'
+      weight: 900
+      size: 48
+    
+  Headline:
+    foreground: PSL Gold
+    font:
+      family: 'Montserrat, sans-serif'
+      weight: 700
+      size: 24
+    
+  Subtitle:
+    foreground: PSL Gold
+    font:
+      family: 'Montserrat, sans-serif'
+      weight: 600
+      size: 18
+    
+  Body:
+    foreground: PSL Text Gray
+    font:
+      family: 'Roboto, sans-serif'
+      size: 16
+    
+  # Input Fields
+  TextBox:
+    background: PSL Medium Gray
+    foreground: PSL Text Gold
+    border: '1px solid PSL Gold'
+    
+  FileLoader:
+    background: PSL Medium Gray
+    foreground: PSL Text Gold
+    border: '1px dashed PSL Gold'
+    
+  # Progress Bar
+  ProgressBar:
+    background: PSL Medium Gray
+    foreground: PSL Gold
+    
+  # Data Grid
+  DataGrid:
+    background: PSL Medium Gray
+    foreground: PSL Text Gold
+    border: '1px solid PSL Gold'
+    header_background: PSL Dark Gray
+    header_foreground: PSL Gold
+    row_stripe_background: PSL Dark Gray
+    
+  # Panels
+  ColumnPanel:
+    background: PSL Black
+    foreground: PSL Text Gold
+    
+  RowPanel:
+    background: PSL Black
+    foreground: PSL Text Gold
+
+# Container Theme
+container:
+  type: ColumnPanel
+  properties:
+    background: PSL Black
+    foreground: PSL Text Gold
+    spacing: {left: 20, top: 20, right: 20, bottom: 20}

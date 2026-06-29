@@ -1,0 +1,964 @@
+container: {type: ColumnPanel}
+properties:
+  title: PSL - Photo Scoring League
+  name: MainForm
+  spacing_above: small
+  spacing_below: small
+  visible: true
+  background: theme:Primary Container
+  foreground: theme:On Primary Container
+  role: null
+  tooltip: null
+  border: null
+  enabled: true
+  spacing: {left: 20, top: 20, right: 20, bottom: 20}
+  auto_scroll: false
+
+components:
+- type: ColumnPanel
+  properties:
+    name: main_container
+    role: null
+    tooltip: null
+    border: null
+    enabled: true
+    visible: true
+    spacing_above: none
+    spacing_below: none
+    background: '#000000'
+    foreground: '#FFD700'
+    spacing: {left: 0, top: 0, right: 0, bottom: 0}
+    col_spacing: medium
+    col_widths: {}
+    auto_scroll: false
+  layout_properties: {grid_position: 'FYQYQH,WZJQZQ', full_width_row: true}
+  components:
+  - type: Label
+    properties:
+      name: title_label
+      role: title
+      tooltip: null
+      border: null
+      enabled: true
+      visible: true
+      text: PSL
+      font: {family: 'Montserrat, sans-serif', size: 48, style: normal, variant: normal, weight: 900}
+      font_size: null
+      spacing_above: small
+      spacing_below: small
+      icon_align: left
+      foreground: '#FFD700'
+      background: '#000000'
+      bold: true
+      italic: false
+      underline: false
+      icon: null
+    layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+    event_bindings: {}
+
+  - type: Label
+    properties:
+      name: subtitle_label
+      role: subtitle
+      tooltip: null
+      border: null
+      enabled: true
+      visible: true
+      text: Photo Scoring League
+      font: {family: 'Montserrat, sans-serif', size: 24, style: normal, variant: normal, weight: 300}
+      font_size: null
+      spacing_above: none
+      spacing_below: large
+      icon_align: left
+      foreground: '#FFD700'
+      background: '#000000'
+      bold: false
+      italic: false
+      underline: false
+      icon: null
+    layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+    event_bindings: {}
+
+  - type: Label
+    properties:
+      name: description_label
+      role: body
+      tooltip: null
+      border: null
+      enabled: true
+      visible: true
+      text: 'Upload your photo to get a comprehensive PSL rating. Our AI analyzes facial geometry, feature proportions, skin quality, and dimorphism to produce individual category scores and a weighted overall PSL score.'
+      font: {family: 'Roboto, sans-serif', size: 16, style: normal, variant: normal, weight: 400}
+      font_size: null
+      spacing_above: none
+      spacing_below: large
+      icon_align: left
+      foreground: '#CCCCCC'
+      background: '#000000'
+      bold: false
+      italic: false
+      underline: false
+      icon: null
+      wrap_on: mobile
+    layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+    event_bindings: {}
+
+  - type: ColumnPanel
+    properties:
+      name: upload_section
+      role: card
+      tooltip: null
+      border: '2px solid #FFD700'
+      enabled: true
+      visible: true
+      spacing_above: none
+      spacing_below: large
+      background: '#111111'
+      foreground: '#FFD700'
+      spacing: {left: 20, top: 20, right: 20, bottom: 20}
+      col_spacing: medium
+      col_widths: {}
+      auto_scroll: false
+    layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true, width: 600}
+    components:
+    - type: Label
+      properties:
+        name: upload_title
+        role: headline
+        tooltip: null
+        border: null
+        enabled: true
+        visible: true
+        text: Upload Your Photo
+        font: {family: 'Montserrat, sans-serif', size: 20, style: normal, variant: normal, weight: 600}
+        font_size: null
+        spacing_above: none
+        spacing_below: small
+        icon_align: left
+        foreground: '#FFD700'
+        background: '#111111'
+        bold: true
+        italic: false
+        underline: false
+        icon: null
+      layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+      event_bindings: {}
+
+    - type: Label
+      properties:
+        name: upload_instructions
+        role: body
+        tooltip: null
+        border: null
+        enabled: true
+        visible: true
+        text: 'For best results, use a clear front-facing photo in good lighting. Avoid heavy filters.'
+        font: {family: 'Roboto, sans-serif', size: 14, style: normal, variant: normal, weight: 400}
+        font_size: null
+        spacing_above: none
+        spacing_below: medium
+        icon_align: left
+        foreground: '#CCCCCC'
+        background: '#111111'
+        bold: false
+        italic: false
+        underline: false
+        icon: null
+      layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+      event_bindings: {}
+
+    - type: FileLoader
+      properties:
+        name: image_uploader
+        role: null
+        tooltip: null
+        border: '1px dashed #FFD700'
+        enabled: true
+        visible: true
+        spacing_above: none
+        spacing_below: medium
+        background: '#222222'
+        foreground: '#FFD700'
+        file_types: [image/jpeg, image/png, image/webp]
+        multiple: false
+        text: '📷 Click to Upload or Drag & Drop'
+        font: {family: 'Roboto, sans-serif', size: 16, style: normal, variant: normal, weight: 400}
+        icon: fa:upload
+        show_file_names: true
+        max_file_size: 10
+        max_files: 1
+      layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+      event_bindings: {change: image_uploader_change}
+
+    - type: Button
+      properties:
+        name: analyze_button
+        role: filled-button
+        tooltip: null
+        border: null
+        enabled: false
+        visible: true
+        spacing_above: none
+        spacing_below: none
+        background: '#FFD700'
+        foreground: '#000000'
+        text: Analyze Photo
+        font: {family: 'Montserrat, sans-serif', size: 16, style: normal, variant: normal, weight: 600}
+        icon: fa:magic
+        icon_align: left
+        bold: true
+        italic: false
+        underline: false
+      layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+      event_bindings: {click: analyze_button_click}
+
+    - type: ProgressBar
+      properties:
+        name: progress_bar
+        role: null
+        tooltip: null
+        border: null
+        enabled: true
+        visible: false
+        spacing_above: small
+        spacing_below: none
+        background: '#222222'
+        foreground: '#FFD700'
+        value: 0
+        max: 100
+      layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+      event_bindings: {}
+
+  - type: ColumnPanel
+      properties:
+        name: results_section
+        role: null
+        tooltip: null
+        border: null
+        enabled: true
+        visible: false
+        spacing_above: none
+        spacing_below: large
+        background: '#111111'
+        foreground: '#FFD700'
+        spacing: {left: 20, top: 20, right: 20, bottom: 20}
+        col_spacing: medium
+        col_widths: {}
+        auto_scroll: false
+      layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+      components:
+      - type: Label
+        properties:
+          name: results_title
+          role: headline
+          tooltip: null
+          border: null
+          enabled: true
+          visible: true
+          text: Your PSL Results
+          font: {family: 'Montserrat, sans-serif', size: 24, style: normal, variant: normal, weight: 700}
+          font_size: null
+          spacing_above: none
+          spacing_below: large
+          icon_align: left
+          foreground: '#FFD700'
+          background: '#111111'
+          bold: true
+          italic: false
+          underline: false
+          icon: null
+        layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+        event_bindings: {}
+
+      - type: RowPanel
+        properties:
+          name: overall_score_row
+          role: null
+          tooltip: null
+          border: '1px solid #FFD700'
+          enabled: true
+          visible: true
+          spacing_above: none
+          spacing_below: large
+          background: '#222222'
+          foreground: '#FFD700'
+          spacing: {left: 20, top: 20, right: 20, bottom: 20}
+          col_spacing: medium
+          col_widths: {}
+          auto_scroll: false
+        layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+        components:
+        - type: ColumnPanel
+          properties:
+            name: overall_score_container
+            role: null
+            tooltip: null
+            border: null
+            enabled: true
+            visible: true
+            spacing_above: none
+            spacing_below: none
+            background: null
+            foreground: null
+            spacing: {left: 0, top: 0, right: 0, bottom: 0}
+            col_spacing: medium
+            col_widths: {}
+            auto_scroll: false
+          layout_properties: {grid_position: 'VZQYQH,WZJQZQ'}
+          components:
+          - type: Label
+            properties:
+              name: overall_score_label
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: Overall PSL Score
+              font: {family: 'Montserrat, sans-serif', size: 14, style: normal, variant: normal, weight: 600}
+              font_size: null
+              spacing_above: none
+              spacing_below: small
+              icon_align: left
+              foreground: '#CCCCCC'
+              background: null
+              bold: false
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+          - type: Label
+            properties:
+              name: overall_score_value
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: '0'
+              font: {family: 'Montserrat, sans-serif', size: 48, style: normal, variant: normal, weight: 900}
+              font_size: null
+              spacing_above: none
+              spacing_below: none
+              icon_align: left
+              foreground: '#FFD700'
+              background: null
+              bold: true
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+        - type: ColumnPanel
+          properties:
+            name: percentile_container
+            role: null
+            tooltip: null
+            border: null
+            enabled: true
+            visible: true
+            spacing_above: none
+            spacing_below: none
+            background: null
+            foreground: null
+            spacing: {left: 0, top: 0, right: 0, bottom: 0}
+            col_spacing: medium
+            col_widths: {}
+            auto_scroll: false
+          layout_properties: {grid_position: 'VZQYQH,WZJQZQ'}
+          components:
+          - type: Label
+            properties:
+              name: percentile_label
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: Percentile
+              font: {family: 'Montserrat, sans-serif', size: 14, style: normal, variant: normal, weight: 600}
+              font_size: null
+              spacing_above: none
+              spacing_below: small
+              icon_align: left
+              foreground: '#CCCCCC'
+              background: null
+              bold: false
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+          - type: Label
+            properties:
+              name: percentile_value
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: '0th'
+              font: {family: 'Montserrat, sans-serif', size: 24, style: normal, variant: normal, weight: 700}
+              font_size: null
+              spacing_above: none
+              spacing_below: none
+              icon_align: left
+              foreground: '#FFD700'
+              background: null
+              bold: true
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+      - type: Label
+        properties:
+          name: category_scores_title
+          role: subtitle
+          tooltip: null
+          border: null
+          enabled: true
+          visible: true
+          text: Category Scores
+          font: {family: 'Montserrat, sans-serif', size: 18, style: normal, variant: normal, weight: 600}
+          font_size: null
+          spacing_above: none
+          spacing_below: medium
+          icon_align: left
+          foreground: '#FFD700'
+          background: '#111111'
+          bold: true
+          italic: false
+          underline: false
+          icon: null
+        layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+        event_bindings: {}
+
+      - type: RowPanel
+        properties:
+          name: category_scores_row
+          role: null
+          tooltip: null
+          border: null
+          enabled: true
+          visible: true
+          spacing_above: none
+          spacing_below: large
+          background: null
+          foreground: null
+          spacing: {left: 0, top: 0, right: 0, bottom: 0}
+          col_spacing: medium
+          col_widths: {}
+          auto_scroll: false
+        layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+        components:
+        - type: ColumnPanel
+          properties:
+            name: facial_geometry_card
+            role: card
+            tooltip: null
+            border: '1px solid #FFD700'
+            enabled: true
+            visible: true
+            spacing_above: none
+            spacing_below: none
+            background: '#222222'
+            foreground: '#FFD700'
+            spacing: {left: 15, top: 15, right: 15, bottom: 15}
+            col_spacing: medium
+            col_widths: {}
+            auto_scroll: false
+          layout_properties: {grid_position: 'VZQYQH,WZJQZQ'}
+          components:
+          - type: Label
+            properties:
+              name: facial_geometry_title
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: Facial Geometry
+              font: {family: 'Montserrat, sans-serif', size: 14, style: normal, variant: normal, weight: 600}
+              font_size: null
+              spacing_above: none
+              spacing_below: small
+              icon_align: left
+              foreground: '#FFD700'
+              background: null
+              bold: true
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+          - type: Label
+            properties:
+              name: facial_geometry_score
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: '0'
+              font: {family: 'Montserrat, sans-serif', size: 24, style: normal, variant: normal, weight: 700}
+              font_size: null
+              spacing_above: none
+              spacing_below: small
+              icon_align: left
+              foreground: '#FFD700'
+              background: null
+              bold: true
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+          - type: Label
+            properties:
+              name: facial_geometry_weight
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: 'Weight: 35%'
+              font: {family: 'Roboto, sans-serif', size: 12, style: normal, variant: normal, weight: 400}
+              font_size: null
+              spacing_above: none
+              spacing_below: none
+              icon_align: left
+              foreground: '#CCCCCC'
+              background: null
+              bold: false
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+        - type: ColumnPanel
+          properties:
+            name: feature_proportions_card
+            role: card
+            tooltip: null
+            border: '1px solid #FFD700'
+            enabled: true
+            visible: true
+            spacing_above: none
+            spacing_below: none
+            background: '#222222'
+            foreground: '#FFD700'
+            spacing: {left: 15, top: 15, right: 15, bottom: 15}
+            col_spacing: medium
+            col_widths: {}
+            auto_scroll: false
+          layout_properties: {grid_position: 'VZQYQH,WZJQZQ'}
+          components:
+          - type: Label
+            properties:
+              name: feature_proportions_title
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: Feature Proportions
+              font: {family: 'Montserrat, sans-serif', size: 14, style: normal, variant: normal, weight: 600}
+              font_size: null
+              spacing_above: none
+              spacing_below: small
+              icon_align: left
+              foreground: '#FFD700'
+              background: null
+              bold: true
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+          - type: Label
+            properties:
+              name: feature_proportions_score
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: '0'
+              font: {family: 'Montserrat, sans-serif', size: 24, style: normal, variant: normal, weight: 700}
+              font_size: null
+              spacing_above: none
+              spacing_below: small
+              icon_align: left
+              foreground: '#FFD700'
+              background: null
+              bold: true
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+          - type: Label
+            properties:
+              name: feature_proportions_weight
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: 'Weight: 25%'
+              font: {family: 'Roboto, sans-serif', size: 12, style: normal, variant: normal, weight: 400}
+              font_size: null
+              spacing_above: none
+              spacing_below: none
+              icon_align: left
+              foreground: '#CCCCCC'
+              background: null
+              bold: false
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+        - type: ColumnPanel
+          properties:
+            name: skin_quality_card
+            role: card
+            tooltip: null
+            border: '1px solid #FFD700'
+            enabled: true
+            visible: true
+            spacing_above: none
+            spacing_below: none
+            background: '#222222'
+            foreground: '#FFD700'
+            spacing: {left: 15, top: 15, right: 15, bottom: 15}
+            col_spacing: medium
+            col_widths: {}
+            auto_scroll: false
+          layout_properties: {grid_position: 'VZQYQH,WZJQZQ'}
+          components:
+          - type: Label
+            properties:
+              name: skin_quality_title
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: Skin Quality
+              font: {family: 'Montserrat, sans-serif', size: 14, style: normal, variant: normal, weight: 600}
+              font_size: null
+              spacing_above: none
+              spacing_below: small
+              icon_align: left
+              foreground: '#FFD700'
+              background: null
+              bold: true
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+          - type: Label
+            properties:
+              name: skin_quality_score
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: '0'
+              font: {family: 'Montserrat, sans-serif', size: 24, style: normal, variant: normal, weight: 700}
+              font_size: null
+              spacing_above: none
+              spacing_below: small
+              icon_align: left
+              foreground: '#FFD700'
+              background: null
+              bold: true
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+          - type: Label
+            properties:
+              name: skin_quality_weight
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: 'Weight: 20%'
+              font: {family: 'Roboto, sans-serif', size: 12, style: normal, variant: normal, weight: 400}
+              font_size: null
+              spacing_above: none
+              spacing_below: none
+              icon_align: left
+              foreground: '#CCCCCC'
+              background: null
+              bold: false
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+        - type: ColumnPanel
+          properties:
+            name: dimorphism_card
+            role: card
+            tooltip: null
+            border: '1px solid #FFD700'
+            enabled: true
+            visible: true
+            spacing_above: none
+            spacing_below: none
+            background: '#222222'
+            foreground: '#FFD700'
+            spacing: {left: 15, top: 15, right: 15, bottom: 15}
+            col_spacing: medium
+            col_widths: {}
+            auto_scroll: false
+          layout_properties: {grid_position: 'VZQYQH,WZJQZQ'}
+          components:
+          - type: Label
+            properties:
+              name: dimorphism_title
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: Dimorphism
+              font: {family: 'Montserrat, sans-serif', size: 14, style: normal, variant: normal, weight: 600}
+              font_size: null
+              spacing_above: none
+              spacing_below: small
+              icon_align: left
+              foreground: '#FFD700'
+              background: null
+              bold: true
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+          - type: Label
+            properties:
+              name: dimorphism_score
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: '0'
+              font: {family: 'Montserrat, sans-serif', size: 24, style: normal, variant: normal, weight: 700}
+              font_size: null
+              spacing_above: none
+              spacing_below: small
+              icon_align: left
+              foreground: '#FFD700'
+              background: null
+              bold: true
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+          - type: Label
+            properties:
+              name: dimorphism_weight
+              role: null
+              tooltip: null
+              border: null
+              enabled: true
+              visible: true
+              text: 'Weight: 20%'
+              font: {family: 'Roboto, sans-serif', size: 12, style: normal, variant: normal, weight: 400}
+              font_size: null
+              spacing_above: none
+              spacing_below: none
+              icon_align: left
+              foreground: '#CCCCCC'
+              background: null
+              bold: false
+              italic: false
+              underline: false
+              icon: null
+            layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+            event_bindings: {}
+
+      - type: Image
+        properties:
+          name: uploaded_image
+          role: null
+          tooltip: null
+          border: '2px solid #FFD700'
+          enabled: true
+          visible: true
+          spacing_above: large
+          spacing_below: large
+          background: '#222222'
+          foreground: null
+          source: null
+          height: 300
+          width: 300
+          stretch: none
+          align: center
+          allow_upload: false
+          show_upload_button: false
+        layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+        event_bindings: {}
+
+      - type: Button
+        properties:
+          name: new_analysis_button
+          role: outlined-button
+          tooltip: null
+          border: '1px solid #FFD700'
+          enabled: true
+          visible: true
+          spacing_above: none
+          spacing_below: none
+          background: null
+          foreground: '#FFD700'
+          text: Upload New Photo
+          font: {family: 'Montserrat, sans-serif', size: 16, style: normal, variant: normal, weight: 600}
+          icon: fa:upload
+          icon_align: left
+          bold: true
+          italic: false
+          underline: false
+        layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+        event_bindings: {click: new_analysis_button_click}
+
+  - type: ColumnPanel
+    properties:
+      name: leaderboard_section
+      role: null
+      tooltip: null
+      border: null
+      enabled: true
+      visible: true
+      spacing_above: large
+      spacing_below: large
+      background: '#111111'
+      foreground: '#FFD700'
+      spacing: {left: 20, top: 20, right: 20, bottom: 20}
+      col_spacing: medium
+      col_widths: {}
+      auto_scroll: false
+    layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+    components:
+    - type: Label
+      properties:
+        name: leaderboard_title
+        role: headline
+        tooltip: null
+        border: null
+        enabled: true
+        visible: true
+        text: Leaderboard
+        font: {family: 'Montserrat, sans-serif', size: 20, style: normal, variant: normal, weight: 600}
+        font_size: null
+        spacing_above: none
+        spacing_below: medium
+        icon_align: left
+        foreground: '#FFD700'
+        background: '#111111'
+        bold: true
+        italic: false
+        underline: false
+        icon: null
+      layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+      event_bindings: {}
+
+    - type: DataGrid
+      properties:
+        name: leaderboard_grid
+        role: null
+        tooltip: null
+        border: '1px solid #FFD700'
+        enabled: true
+        visible: true
+        spacing_above: none
+        spacing_below: none
+        background: '#222222'
+        foreground: '#FFD700'
+        rows: null
+        columns: null
+        auto_header: true
+        show_page_controls: true
+        page_size: 10
+        wrap_on: never
+        show_row_numbers: false
+        allow_column_reordering: false
+        allow_column_sorting: true
+        allow_row_selection: false
+        allow_row_editing: false
+        allow_row_deletion: false
+        allow_row_addition: false
+        auto_save: false
+      layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+      event_bindings: {}
+      components: []
+
+  - type: ColumnPanel
+    properties:
+      name: footer
+      role: null
+      tooltip: null
+      border: null
+      enabled: true
+      visible: true
+      spacing_above: large
+      spacing_below: none
+      background: '#000000'
+      foreground: '#CCCCCC'
+      spacing: {left: 20, top: 20, right: 20, bottom: 20}
+      col_spacing: medium
+      col_widths: {}
+      auto_scroll: false
+    layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+    components:
+    - type: Label
+      properties:
+        name: footer_text
+        role: body
+        tooltip: null
+        border: null
+        enabled: true
+        visible: true
+        text: 'PSL - Photo Scoring League | Powered by NVIDIA Kimi K2.6 AI | No account needed | Analysis in seconds'
+        font: {family: 'Roboto, sans-serif', size: 14, style: normal, variant: normal, weight: 400}
+        font_size: null
+        spacing_above: none
+        spacing_below: none
+        icon_align: left
+        foreground: '#CCCCCC'
+        background: '#000000'
+        bold: false
+        italic: false
+        underline: false
+        icon: null
+      layout_properties: {grid_position: 'VZQYQH,WZJQZQ', full_width_row: true}
+      event_bindings: {}
+
+is_package: true
