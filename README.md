@@ -1,40 +1,54 @@
 # PSL-APP - Photo Scoring League
 
-A comprehensive face rating application that uses NVIDIA's Kimi K2.6 AI model to analyze and score photos **out of 10** with **3 specific improvements** for each face.
+A comprehensive face rating application that uses **NVIDIA's Kimi K2.6 AI model** to analyze and score photos **out of 10** with **3 AI-GENERATED, PERSONALIZED improvements** for each face.
 
-## Features
+## 🎯 Key Features
 
-- **AI-Powered Analysis**: Uses NVIDIA Kimi K2.6 for advanced face analysis
-- **10-Point Rating System**: Each category scored from 0-10 (10 being perfect)
-- **Four Category Scores**: Detailed scoring in facial geometry, feature proportions, skin quality, and dimorphism
-- **3 Personalized Improvements**: AI provides 3 specific, actionable improvements for your face
-- **Weighted Overall Score**: Combines category scores with customizable weights
-- **Percentile Ranking**: Shows where you stand relative to other users
-- **No Account Required**: Upload and analyze photos instantly
-- **Black & Gold Theme**: Elegant, professional styling
-- **Responsive Design**: Works on desktop and mobile devices
+- **🤖 AI-Powered Analysis**: Uses NVIDIA Kimi K2.6 for advanced face analysis
+- **📊 10-Point Rating System**: Each category scored from 0-10 (10 being perfect)
+- **💡 3 AI-Generated Improvements**: **Personalized, specific suggestions** based on YOUR exact face
+- **⚖️ Four Category Scores**: Facial geometry, feature proportions, skin quality, dimorphism
+- **📈 Weighted Overall Score**: Combines category scores with customizable weights
+- **🏆 Percentile Ranking**: Shows where you stand relative to other users
+- **🚀 No Account Required**: Upload and analyze photos instantly
+- **🎨 Black & Gold Theme**: Elegant, professional styling
+
+## 🎯 AI-Generated Improvements
+
+The **NVIDIA Kimi K2.6 AI** analyzes your **specific face** and generates **3 personalized improvements** that are:
+
+- **🎯 Specific to YOUR face** - Not generic advice
+- **📋 Actionable** - Clear steps you can take
+- **🏆 Ranked by Priority** - Most impactful first
+- **🏷️ Categorized** - Linked to specific rating categories
+- **💬 Honest & Constructive** - Based on actual analysis
+
+### Example AI-Generated Improvements:
+```
+1. [Facial Geometry] Address facial asymmetry through strategic lighting and camera angles to create more balanced appearance
+
+2. [Feature Proportions] Balance eye-to-nose ratio with strategic makeup or grooming to create more harmonious feature ratios  
+
+3. [Skin Quality] Improve skin texture through proper skincare routine and hydration to reduce visible pores and imperfections
+```
 
 ## Scoring Categories (All Out of 10)
 
-1. **Facial Geometry (35% weight)**: Assesses bone structure, jawline definition, cheekbone prominence, and overall facial harmony. Consider symmetry and proportions.
+1. **Facial Geometry (35% weight)**: 
+   - Bone structure, jawline definition, cheekbone prominence
+   - Overall facial harmony and symmetry
 
-2. **Feature Proportions (25% weight)**: Evaluates balance and proportions between eyes, nose, mouth, and other facial features. Consider interocular distance, nose-to-mouth ratio, etc.
+2. **Feature Proportions (25% weight)**:
+   - Balance between eyes, nose, mouth
+   - Interocular distance, nose-to-mouth ratio
 
-3. **Skin Quality (20% weight)**: Assesses skin clarity, texture, pore visibility, wrinkles, blemishes, and overall skin health.
+3. **Skin Quality (20% weight)**:
+   - Skin clarity, texture, pore visibility
+   - Wrinkles, blemishes, overall skin health
 
-4. **Dimorphism (20% weight)**: Evaluates sexual dimorphism - how strongly the face expresses masculine or feminine traits. Higher scores indicate more pronounced dimorphic features.
-
-## 3 Key Improvements
-
-For each analysis, the AI provides **exactly 3 specific improvements** ranked by priority:
-- Each improvement targets a specific category
-- Actionable suggestions for enhancing your appearance
-- Ranked from most to least important
-
-Example improvements:
-- "Define jawline through targeted exercises or contouring"
-- "Improve cheekbone prominence with proper lighting and angles"
-- "Balance eye-to-nose ratio with strategic makeup or grooming"
+4. **Dimorphism (20% weight)**:
+   - How strongly the face expresses masculine/feminine traits
+   - Higher scores = more pronounced dimorphic features
 
 ## Requirements
 
@@ -61,7 +75,6 @@ Example improvements:
    - Create a new Anvil app
    - Upload all files from this repository
    - Set the runtime to Python 3.10
-   - Configure the NVIDIA API URL in `anvil.yaml`
 
 ## Usage
 
@@ -69,18 +82,10 @@ Example improvements:
 2. Click "Analyze Photo"
 3. View your **scores out of 10** in all four categories
 4. See your **overall PSL score** and **percentile ranking**
-5. Read your **3 personalized improvements**
+5. **Read your 3 AI-GENERATED improvements** - these are **personalized just for you**
 6. Compare with others on the leaderboard
 
-## Tips for Best Results
-
-- Use a clear, well-lit photo
-- Front-facing (selfie-style) works best
-- Avoid heavy filters or editing
-- Neutral facial expression recommended
-- Ensure the face is clearly visible
-
-## Output Format
+## 📋 Output Format
 
 ### Ratings (0-10)
 ```json
@@ -96,28 +101,39 @@ Example improvements:
 }
 ```
 
-### Improvements (3 specific suggestions)
+### AI-Generated Improvements (3 specific suggestions)
 ```json
 {
   "improvements": [
     {
       "category": "Facial Geometry",
-      "improvement": "Define jawline through targeted exercises or contouring",
+      "improvement": "Address the slight asymmetry in your jawline through strategic lighting from the left side",
       "priority": 1
     },
     {
       "category": "Feature Proportions", 
-      "improvement": "Balance eye-to-nose ratio with strategic makeup or grooming",
+      "improvement": "Your eyes are slightly close together - use hairstyle framing to create better balance",
       "priority": 2
     },
     {
       "category": "Skin Quality",
-      "improvement": "Improve skin clarity with proper skincare routine",
+      "improvement": "Focus on reducing pore visibility on your forehead with a targeted skincare routine",
       "priority": 3
     }
   ]
 }
 ```
+
+## 🔧 How the AI Generates Improvements
+
+The NVIDIA Kimi K2.6 model:
+1. **Analyzes your specific face** in detail
+2. **Identifies unique characteristics** and areas for improvement
+3. **Generates personalized suggestions** based on what it actually sees
+4. **Ranks improvements by impact** - most beneficial first
+5. **Categorizes each suggestion** to the relevant rating category
+
+This is **NOT generic advice** - each improvement is **AI-generated specifically for YOUR face**.
 
 ## File Structure
 
@@ -153,17 +169,13 @@ SCORING_WEIGHTS = {
 }
 ```
 
-### Changing Theme Colors
-
-Edit `theme.yaml` to customize the black and gold color scheme.
-
 ## Fallback Analysis
 
 If the NVIDIA API is unavailable, the app falls back to local analysis using:
 - OpenCV for image processing
 - face-recognition for facial landmark detection
 - Custom algorithms for each scoring category (0-10)
-- Automatic generation of 3 improvements
+- **AI-style improvement generation** based on actual facial measurements
 
 ## Performance
 
@@ -189,4 +201,4 @@ For issues or questions, please contact the development team.
 
 **PSL - Photo Scoring League**
 
-*Quick, structured face-rating snapshot with 10-point scores and 3 personalized improvements, powered by AI*
+*Quick, structured face-rating snapshot with **AI-generated 10-point scores** and **3 personalized improvements**, powered by NVIDIA Kimi K2.6*

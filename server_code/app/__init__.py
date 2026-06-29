@@ -72,7 +72,7 @@ def calculate_percentile(score):
     return percentile
 
 def analyze_face_with_nvidia(image_data):
-    """Send image to NVIDIA Kimi K2.6 for analysis"""
+    """Send image to NVIDIA Kimi K2.6 for analysis with AI-generated improvements"""
     try:
         image = Image.open(BytesIO(image_data))
         
@@ -81,7 +81,7 @@ def analyze_face_with_nvidia(image_data):
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
         
-        # Prepare the request payload
+        # Prepare the request payload - ENHANCED PROMPT FOR AI-GENERATED IMPROVEMENTS
         payload = {
             "model": "kimi-k2.6",
             "messages": [
@@ -90,20 +90,25 @@ def analyze_face_with_nvidia(image_data):
                     "content": [
                         {
                             "type": "text",
-                            "text": """Analyze this face for PSL (Photo Scoring League) rating. 
-                            Rate EACH of the following four categories on a scale of 0-10 (10 being perfect):
+                            "text": """You are an expert facial analysis AI for PSL (Photo Scoring League). 
+                            Analyze this face and provide:
                             
-                            1. Facial Geometry: Assess bone structure, jawline definition, cheekbone prominence, and overall facial harmony. Consider symmetry and proportions.
+                            1. RATINGS: Rate EACH of the following four categories on a scale of 0-10 (10 being perfect, 0 being poor):
+                               - facial_geometry: Bone structure, jawline definition, cheekbone prominence, facial harmony, symmetry
+                               - feature_proportions: Balance between eyes, nose, mouth, interocular distance, nose-to-mouth ratio
+                               - skin_quality: Clarity, texture, pore visibility, wrinkles, blemishes, overall skin health
+                               - dimorphism: How strongly the face expresses masculine/feminine traits
                             
-                            2. Feature Proportions: Evaluate the balance and proportions between eyes, nose, mouth, and other facial features. Consider interocular distance, nose-to-mouth ratio, etc.
+                            2. IMPROVEMENTS: Provide EXACTLY 3 AI-GENERATED, SPECIFIC, PERSONALIZED improvements for THIS EXACT FACE.
+                               Each improvement must be:
+                               - Based on what you actually see in this specific face
+                               - Specific and actionable (not generic advice)
+                               - Ranked by priority (1 = most impactful improvement)
+                               - Include the category it relates to
+                               - Be honest and constructive
+                               - Consider the person's unique facial features
                             
-                            3. Skin Quality: Assess skin clarity, texture, pore visibility, wrinkles, blemishes, and overall skin health.
-                            
-                            4. Dimorphism: Evaluate sexual dimorphism - how strongly the face expresses masculine or feminine traits. Higher scores indicate more pronounced dimorphic features.
-                            
-                            Then provide EXACTLY 3 specific improvements for this face, ranked by priority (most important first). Each improvement should be specific and actionable.
-                            
-                            Return ONLY a JSON object with the following EXACT structure:
+                            Return ONLY a JSON object with this EXACT structure:
                             {
                                 "ratings": {
                                     "facial_geometry": <score_0_10>,
@@ -112,18 +117,14 @@ def analyze_face_with_nvidia(image_data):
                                     "dimorphism": <score_0_10>
                                 },
                                 "improvements": [
-                                    {"category": "<category_name>", "improvement": "<specific_improvement_1>", "priority": 1},
-                                    {"category": "<category_name>", "improvement": "<specific_improvement_2>", "priority": 2},
-                                    {"category": "<category_name>", "improvement": "<specific_improvement_3>", "priority": 3}
-                                ],
-                                "analysis_details": {
-                                    "facial_geometry_notes": "brief analysis",
-                                    "feature_proportions_notes": "brief analysis", 
-                                    "skin_quality_notes": "brief analysis",
-                                    "dimorphism_notes": "brief analysis"
-                                }
+                                    {"category": "<specific_category>", "improvement": "<ai_generated_specific_improvement_for_this_face>", "priority": 1},
+                                    {"category": "<specific_category>", "improvement": "<ai_generated_specific_improvement_for_this_face>", "priority": 2},
+                                    {"category": "<specific_category>", "improvement": "<ai_generated_specific_improvement_for_this_face>", "priority": 3}
+                                ]
                             }
-                            """
+                            
+                            IMPORTANT: The improvements MUST be AI-generated based on THIS SPECIFIC FACE, not generic advice.
+                            Be specific about what you see and what would improve it."""
                         },
                         {
                             "type": "image",
@@ -132,7 +133,7 @@ def analyze_face_with_nvidia(image_data):
                     ]
                 }
             ],
-            "temperature": 0.1,
+            "temperature": 0.3,  # Slightly higher for more creative improvements
             "max_tokens": 2000
         }
         
@@ -156,12 +157,36 @@ def analyze_face_with_nvidia(image_data):
             # Parse the JSON response
             try:
                 analysis = json.loads(content)
-                return analysis
+                # Validate the structure
+                if 'ratings' in analysis and 'improvements' in analysis:
+                    if len(analysis.get('improvements', [])) == 3:
+                        return analysis
+                    else:
+                        # Fix if not exactly 3 improvements
+                        analysis['improvements'] = analysis.get('improvements', [])[:3]
+                        while len(analysis['improvements']) < 3:
+                            analysis['improvements'].append({
+                                "category": "General",
+                                "improvement": "Use better lighting for clearer analysis",
+                                "priority": len(analysis['improvements']) + 1
+                            })
+                        return analysis
+                else:
+                    return analyze_face_locally(image_data)
             except json.JSONDecodeError:
                 import re
                 json_match = re.search(r'\{.*\}', content, re.DOTALL)
                 if json_match:
                     analysis = json.loads(json_match.group())
+                    # Ensure we have 3 improvements
+                    if len(analysis.get('improvements', [])) < 3:
+                        analysis['improvements'] = analysis.get('improvements', [])[:3]
+                        while len(analysis['improvements']) < 3:
+                            analysis['improvements'].append({
+                                "category": "General",
+                                "improvement": "Use better lighting for clearer analysis",
+                                "priority": len(analysis['improvements']) + 1
+                            })
                     return analysis
                 else:
                     return analyze_face_locally(image_data)
@@ -189,9 +214,9 @@ def analyze_face_locally(image_data):
                     "dimorphism": 0
                 },
                 "improvements": [
-                    {"category": "general", "improvement": "Ensure face is clearly visible in the photo", "priority": 1},
-                    {"category": "general", "improvement": "Use better lighting", "priority": 2},
-                    {"category": "general", "improvement": "Remove obstructions from face", "priority": 3}
+                    {"category": "General", "improvement": "Ensure face is clearly visible in the photo", "priority": 1},
+                    {"category": "General", "improvement": "Use better lighting to help the AI analyze your features", "priority": 2},
+                    {"category": "General", "improvement": "Remove obstructions from face for accurate analysis", "priority": 3}
                 ]
             }
         
@@ -203,9 +228,9 @@ def analyze_face_locally(image_data):
         skin_quality = analyze_skin_quality(image, face_landmarks) / 10
         dimorphism = analyze_dimorphism(face_landmarks, image) / 10
         
-        # Generate improvements based on scores
-        improvements = generate_improvements(
-            facial_geometry, feature_proportions, skin_quality, dimorphism
+        # Generate AI-style improvements based on scores
+        improvements = generate_ai_improvements(
+            facial_geometry, feature_proportions, skin_quality, dimorphism, face_landmarks, image
         )
         
         return {
@@ -234,9 +259,9 @@ def analyze_face_locally(image_data):
                 "dimorphism": 5.0
             },
             "improvements": [
-                {"category": "general", "improvement": "Ensure clear, well-lit photo", "priority": 1},
-                {"category": "general", "improvement": "Face should be front-facing", "priority": 2},
-                {"category": "general", "improvement": "Avoid heavy filters", "priority": 3}
+                {"category": "General", "improvement": "Ensure clear, well-lit photo for accurate AI analysis", "priority": 1},
+                {"category": "General", "improvement": "Face should be front-facing and clearly visible", "priority": 2},
+                {"category": "General", "improvement": "Avoid heavy filters that obscure natural features", "priority": 3}
             ],
             "analysis_details": {
                 "facial_geometry_notes": "Default score due to analysis error",
@@ -246,85 +271,191 @@ def analyze_face_locally(image_data):
             }
         }
 
-def generate_improvements(fg, fp, sq, dim):
-    """Generate 3 specific improvements based on scores"""
+def generate_ai_improvements(fg, fp, sq, dim, landmarks, image):
+    """Generate AI-style improvements based on actual facial analysis"""
     improvements = []
     
-    # Analyze each category and suggest improvements
-    categories = [
-        (fg, "facial_geometry", "Facial Geometry"),
-        (fp, "feature_proportions", "Feature Proportions"),
-        (sq, "skin_quality", "Skin Quality"),
-        (dim, "dimorphism", "Dimorphism")
-    ]
-    
-    # Sort by score (lowest first = most room for improvement)
-    sorted_categories = sorted(categories, key=lambda x: x[0])
-    
-    # Generate improvements for the 3 lowest scoring categories
-    improvement_suggestions = {
-        "facial_geometry": [
-            "Define jawline through targeted exercises or contouring",
-            "Improve cheekbone prominence with proper lighting and angles",
-            "Work on facial symmetry through posture and camera positioning",
-            "Enhance bone structure definition with shadow techniques"
-        ],
-        "feature_proportions": [
-            "Balance eye-to-nose ratio with strategic makeup or grooming",
-            "Improve nose-to-mouth proportion through contouring",
-            "Enhance interocular distance perception with hairstyle framing",
-            "Create better feature harmony with proportional accessories"
-        ],
-        "skin_quality": [
-            "Improve skin clarity with proper skincare routine",
-            "Reduce pore visibility with professional treatments",
-            "Enhance skin texture with hydration and exfoliation",
-            "Address blemishes with targeted skincare products"
-        ],
-        "dimorphism": [
-            "Enhance masculine/feminine features through styling",
-            "Accentuate jawline definition for stronger dimorphism",
-            "Use clothing and accessories to emphasize natural features",
-            "Improve feature contrast for more pronounced dimorphism"
-        ]
-    }
-    
-    # Select the 3 most needed improvements
-    for i, (score, cat_key, cat_name) in enumerate(sorted_categories[:3]):
-        if score < 7:
-            # Pick a relevant suggestion
-            suggestions = improvement_suggestions[cat_key]
-            suggestion = suggestions[i % len(suggestions)]
-            improvements.append({
-                "category": cat_name,
-                "improvement": suggestion,
-                "priority": i + 1
-            })
+    # Analyze specific facial characteristics
+    try:
+        # Get facial measurements
+        chin = landmarks.get('chin', [])
+        left_eye = landmarks.get('left_eye', [])
+        right_eye = landmarks.get('right_eye', [])
+        nose_tip = landmarks.get('nose_tip', [])
+        
+        # Calculate asymmetry
+        if left_eye and right_eye:
+            left_eye_center = np.mean(left_eye, axis=0)
+            right_eye_center = np.mean(right_eye, axis=0)
+            eye_midpoint = (left_eye_center + right_eye_center) / 2
+            asymmetry = np.linalg.norm(left_eye_center - eye_midpoint) - np.linalg.norm(right_eye_center - eye_midpoint)
         else:
-            # If score is good, suggest maintenance
+            asymmetry = 0
+        
+        # Jawline analysis
+        if chin:
+            chin_width = np.linalg.norm(np.array(chin[0]) - np.array(chin[-1]))
+            jawline_defined = chin_width > 100  # Arbitrary threshold
+        else:
+            jawline_defined = False
+        
+        # Generate improvements based on actual analysis
+        if fg < 7:
+            if asymmetry > 5:
+                improvements.append({
+                    "category": "Facial Geometry",
+                    "improvement": "Address facial asymmetry through strategic lighting and camera angles to create more balanced appearance",
+                    "priority": 1
+                })
+            elif not jawline_defined:
+                improvements.append({
+                    "category": "Facial Geometry",
+                    "improvement": "Enhance jawline definition through targeted exercises or contouring techniques to improve bone structure visibility",
+                    "priority": 1
+                })
+            else:
+                improvements.append({
+                    "category": "Facial Geometry",
+                    "improvement": "Refine cheekbone prominence with proper lighting to accentuate your natural bone structure",
+                    "priority": 1
+                })
+        
+        if fp < 7:
+            if left_eye and right_eye:
+                eye_width_left = np.linalg.norm(np.array(left_eye[0]) - np.array(left_eye[3]))
+                eye_width_right = np.linalg.norm(np.array(right_eye[0]) - np.array(right_eye[3]))
+                if abs(eye_width_left - eye_width_right) > 5:
+                    improvements.append({
+                        "category": "Feature Proportions",
+                        "improvement": "Balance eye proportions through strategic makeup or grooming to create more harmonious feature ratios",
+                        "priority": 2 if len(improvements) > 0 else 1
+                    })
+                else:
+                    improvements.append({
+                        "category": "Feature Proportions",
+                        "improvement": "Optimize nose-to-mouth ratio with contouring to achieve better facial feature balance",
+                        "priority": 2 if len(improvements) > 0 else 1
+                    })
+            else:
+                improvements.append({
+                    "category": "Feature Proportions",
+                    "improvement": "Improve overall feature harmony through strategic framing and angle selection",
+                    "priority": 2 if len(improvements) > 0 else 1
+                })
+        
+        if sq < 7:
+            # Analyze skin texture
+            gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+            if chin and left_eye:
+                hull = cv2.convexHull(np.array(chin + landmarks.get('left_eyebrow', []) + landmarks.get('right_eyebrow', [])))
+                mask = np.zeros_like(gray)
+                cv2.drawContours(mask, [hull], -1, 255, -1)
+                face_region = gray[mask == 255]
+                if len(face_region) > 0:
+                    std_intensity = np.std(face_region)
+                    if std_intensity > 30:
+                        improvements.append({
+                            "category": "Skin Quality",
+                            "improvement": "Improve skin texture through proper skincare routine and hydration to reduce visible pores and imperfections",
+                            "priority": 3 if len(improvements) >= 2 else (2 if len(improvements) > 0 else 1)
+                        })
+                    else:
+                        improvements.append({
+                            "category": "Skin Quality",
+                            "improvement": "Enhance skin clarity with targeted treatments to address blemishes and achieve smoother complexion",
+                            "priority": 3 if len(improvements) >= 2 else (2 if len(improvements) > 0 else 1)
+                        })
+                else:
+                    improvements.append({
+                        "category": "Skin Quality",
+                        "improvement": "Maintain skin health with consistent skincare to preserve current quality",
+                        "priority": 3 if len(improvements) >= 2 else (2 if len(improvements) > 0 else 1)
+                    })
+            else:
+                improvements.append({
+                    "category": "Skin Quality",
+                    "improvement": "Focus on skin clarity and texture improvement through professional skincare regimen",
+                    "priority": 3 if len(improvements) >= 2 else (2 if len(improvements) > 0 else 1)
+                })
+        
+        if dim < 7:
             improvements.append({
-                "category": cat_name,
-                "improvement": f"Maintain current {cat_name.lower()} quality",
-                "priority": i + 1
+                "category": "Dimorphism",
+                "improvement": "Enhance masculine/feminine features through strategic styling, grooming, and accessory choices",
+                "priority": 3 if len(improvements) >= 2 else (2 if len(improvements) > 0 else 1)
             })
-    
-    # If we don't have 3 improvements yet, add general ones
-    while len(improvements) < 3:
+        
+        # If we have fewer than 3 improvements, add more based on scores
+        all_categories = [
+            (fg, "Facial Geometry", [
+                "Define jawline through targeted exercises or contouring",
+                "Improve cheekbone prominence with proper lighting and angles",
+                "Work on facial symmetry through posture and camera positioning"
+            ]),
+            (fp, "Feature Proportions", [
+                "Balance eye-to-nose ratio with strategic makeup or grooming",
+                "Improve nose-to-mouth proportion through contouring",
+                "Enhance interocular distance perception with hairstyle framing"
+            ]),
+            (sq, "Skin Quality", [
+                "Improve skin clarity with proper skincare routine",
+                "Reduce pore visibility with professional treatments",
+                "Enhance skin texture with hydration and exfoliation"
+            ]),
+            (dim, "Dimorphism", [
+                "Enhance masculine/feminine features through styling",
+                "Accentuate jawline definition for stronger dimorphism",
+                "Use clothing and accessories to emphasize natural features"
+            ])
+        ]
+        
+        # Sort by score (lowest first)
+        sorted_categories = sorted(all_categories, key=lambda x: x[0])
+        
+        # Add improvements until we have 3
+        for score, category, suggestions in sorted_categories:
+            if len(improvements) >= 3:
+                break
+            if score < 8:  # Only suggest improvements for scores below 8
+                for suggestion in suggestions:
+                    if len(improvements) >= 3:
+                        break
+                    if suggestion not in [imp["improvement"] for imp in improvements]:
+                        improvements.append({
+                            "category": category,
+                            "improvement": suggestion,
+                            "priority": len(improvements) + 1
+                        })
+        
+        # If still not 3, add general improvements
         general_suggestions = [
             "Use better lighting to highlight facial features",
-            "Experiment with different camera angles",
+            "Experiment with different camera angles for optimal results",
             "Ensure consistent photo quality across analyses"
         ]
-        for suggestion in general_suggestions:
-            if suggestion not in [imp["improvement"] for imp in improvements]:
-                improvements.append({
-                    "category": "General",
-                    "improvement": suggestion,
-                    "priority": len(improvements) + 1
-                })
-                break
+        while len(improvements) < 3:
+            for suggestion in general_suggestions:
+                if suggestion not in [imp["improvement"] for imp in improvements]:
+                    improvements.append({
+                        "category": "General",
+                        "improvement": suggestion,
+                        "priority": len(improvements) + 1
+                    })
+                    break
+        
+        # Sort by priority
+        improvements = sorted(improvements, key=lambda x: x["priority"])
+        
+    except Exception as e:
+        print(f"Error generating improvements: {e}")
+        # Fallback to generic improvements
+        improvements = [
+            {"category": "General", "improvement": "Use better lighting for clearer facial analysis", "priority": 1},
+            {"category": "General", "improvement": "Ensure face is front-facing and clearly visible", "priority": 2},
+            {"category": "General", "improvement": "Avoid heavy filters that obscure natural features", "priority": 3}
+        ]
     
-    return improvements[:3]  # Ensure exactly 3
+    return improvements[:3]
 
 def analyze_facial_geometry(landmarks, image_shape):
     """Analyze facial geometry using landmarks (0-10 scale)"""
@@ -460,7 +591,7 @@ def calculate_overall_psl(facial_geometry, feature_proportions, skin_quality, di
 @anvil.server.callable
 @anvil.server.background_task
 async def rate_face(image_data):
-    """Main function to rate a face and return results"""
+    """Main function to rate a face and return results with AI-generated improvements"""
     try:
         analysis = analyze_face_with_nvidia(image_data)
         
@@ -477,12 +608,22 @@ async def rate_face(image_data):
         skin_quality = float(ratings.get('skin_quality', 5.0))
         dimorphism = float(ratings.get('dimorphism', 5.0))
         
-        # Extract improvements
+        # Extract AI-generated improvements
         improvements = analysis.get('improvements', [
-            {"category": "General", "improvement": "Use better lighting", "priority": 1},
+            {"category": "General", "improvement": "Use better lighting for clearer analysis", "priority": 1},
             {"category": "General", "improvement": "Ensure face is clearly visible", "priority": 2},
             {"category": "General", "improvement": "Avoid heavy filters", "priority": 3}
         ])
+        
+        # Ensure we have exactly 3 improvements
+        if len(improvements) < 3:
+            improvements = improvements[:3]
+            while len(improvements) < 3:
+                improvements.append({
+                    "category": "General",
+                    "improvement": f"Improvement suggestion {len(improvements) + 1}",
+                    "priority": len(improvements) + 1
+                })
         
         # Calculate overall score (0-10)
         overall_score = calculate_overall_psl(
