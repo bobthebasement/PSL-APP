@@ -38,6 +38,7 @@ class FaceRating(tables.Table):
     percentile = tables.Column(tables.NumberType())
     timestamp = tables.Column(tables.DateTimeType())
     analysis_data = tables.Column(tables.JsonType())
+    improvements = tables.Column(tables.JsonType())
 
 # NVIDIA API Configuration
 NVIDIA_API_URL = "https://build.nvidia.com/moonshotai/kimi-k2.6"
@@ -52,17 +53,14 @@ SCORING_WEIGHTS = {
 }
 
 # Reference dataset for percentile calculation (simulated)
-# In production, this would be populated with actual user data
 REFERENCE_DATASET = []
 
 def initialize_reference_dataset():
     """Initialize with some sample data for percentile calculation"""
     global REFERENCE_DATASET
-    # Simulate a dataset of 1000 entries with normal distribution
     np.random.seed(42)
-    REFERENCE_DATASET = list(np.random.normal(75, 15, 1000))
-    # Ensure scores are between 0-100
-    REFERENCE_DATASET = [max(0, min(100, score)) for score in REFERENCE_DATASET]
+    REFERENCE_DATASET = list(np.random.normal(7.5, 1.5, 1000))
+    REFERENCE_DATASET = [max(0, min(10, score)) for score in REFERENCE_DATASET]
 
 def calculate_percentile(score):
     """Calculate percentile based on reference dataset"""
@@ -76,7 +74,6 @@ def calculate_percentile(score):
 def analyze_face_with_nvidia(image_data):
     """Send image to NVIDIA Kimi K2.6 for analysis"""
     try:
-        # Prepare the image
         image = Image.open(BytesIO(image_data))
         
         # Convert to base64
@@ -94,7 +91,7 @@ def analyze_face_with_nvidia(image_data):
                         {
                             "type": "text",
                             "text": """Analyze this face for PSL (Photo Scoring League) rating. 
-                            Evaluate and score the following four categories on a scale of 0-100:
+                            Rate EACH of the following four categories on a scale of 0-10 (10 being perfect):
                             
                             1. Facial Geometry: Assess bone structure, jawline definition, cheekbone prominence, and overall facial harmony. Consider symmetry and proportions.
                             
@@ -104,12 +101,21 @@ def analyze_face_with_nvidia(image_data):
                             
                             4. Dimorphism: Evaluate sexual dimorphism - how strongly the face expresses masculine or feminine traits. Higher scores indicate more pronounced dimorphic features.
                             
-                            Return ONLY a JSON object with the following structure:
+                            Then provide EXACTLY 3 specific improvements for this face, ranked by priority (most important first). Each improvement should be specific and actionable.
+                            
+                            Return ONLY a JSON object with the following EXACT structure:
                             {
-                                "facial_geometry": <score_0_100>,
-                                "feature_proportions": <score_0_100>,
-                                "skin_quality": <score_0_100>,
-                                "dimorphism": <score_0_100>,
+                                "ratings": {
+                                    "facial_geometry": <score_0_10>,
+                                    "feature_proportions": <score_0_10>,
+                                    "skin_quality": <score_0_10>,
+                                    "dimorphism": <score_0_10>
+                                },
+                                "improvements": [
+                                    {"category": "<category_name>", "improvement": "<specific_improvement_1>", "priority": 1},
+                                    {"category": "<category_name>", "improvement": "<specific_improvement_2>", "priority": 2},
+                                    {"category": "<category_name>", "improvement": "<specific_improvement_3>", "priority": 3}
+                                ],
                                 "analysis_details": {
                                     "facial_geometry_notes": "brief analysis",
                                     "feature_proportions_notes": "brief analysis", 
@@ -152,54 +158,64 @@ def analyze_face_with_nvidia(image_data):
                 analysis = json.loads(content)
                 return analysis
             except json.JSONDecodeError:
-                # Try to extract JSON from the response
                 import re
                 json_match = re.search(r'\{.*\}', content, re.DOTALL)
                 if json_match:
                     analysis = json.loads(json_match.group())
                     return analysis
                 else:
-                    # Fallback to local analysis
                     return analyze_face_locally(image_data)
         else:
             print(f"NVIDIA API Error: {response.status_code} - {response.text}")
-            # Fallback to local analysis
             return analyze_face_locally(image_data)
             
     except Exception as e:
         print(f"Error with NVIDIA API: {e}")
-        # Fallback to local analysis
         return analyze_face_locally(image_data)
 
 def analyze_face_locally(image_data):
     """Local fallback analysis using face_recognition and OpenCV"""
     try:
-        # Load image
         image = face_recognition.load_image_file(BytesIO(image_data))
         face_landmarks_list = face_recognition.face_landmarks(image)
         
         if not face_landmarks_list:
             return {
                 "error": "No face detected in the image",
-                "facial_geometry": 0,
-                "feature_proportions": 0,
-                "skin_quality": 0,
-                "dimorphism": 0
+                "ratings": {
+                    "facial_geometry": 0,
+                    "feature_proportions": 0,
+                    "skin_quality": 0,
+                    "dimorphism": 0
+                },
+                "improvements": [
+                    {"category": "general", "improvement": "Ensure face is clearly visible in the photo", "priority": 1},
+                    {"category": "general", "improvement": "Use better lighting", "priority": 2},
+                    {"category": "general", "improvement": "Remove obstructions from face", "priority": 3}
+                ]
             }
         
         face_landmarks = face_landmarks_list[0]
         
-        # Basic facial geometry analysis
-        facial_geometry = analyze_facial_geometry(face_landmarks, image.shape)
-        feature_proportions = analyze_feature_proportions(face_landmarks)
-        skin_quality = analyze_skin_quality(image, face_landmarks)
-        dimorphism = analyze_dimorphism(face_landmarks, image)
+        # Basic facial geometry analysis (scale 0-10)
+        facial_geometry = analyze_facial_geometry(face_landmarks, image.shape) / 10
+        feature_proportions = analyze_feature_proportions(face_landmarks) / 10
+        skin_quality = analyze_skin_quality(image, face_landmarks) / 10
+        dimorphism = analyze_dimorphism(face_landmarks, image) / 10
+        
+        # Generate improvements based on scores
+        improvements = generate_improvements(
+            facial_geometry, feature_proportions, skin_quality, dimorphism
+        )
         
         return {
-            "facial_geometry": facial_geometry,
-            "feature_proportions": feature_proportions,
-            "skin_quality": skin_quality,
-            "dimorphism": dimorphism,
+            "ratings": {
+                "facial_geometry": facial_geometry,
+                "feature_proportions": feature_proportions,
+                "skin_quality": skin_quality,
+                "dimorphism": dimorphism
+            },
+            "improvements": improvements,
             "analysis_details": {
                 "facial_geometry_notes": "Local analysis based on facial landmarks",
                 "feature_proportions_notes": "Local analysis of feature ratios",
@@ -210,12 +226,18 @@ def analyze_face_locally(image_data):
         
     except Exception as e:
         print(f"Local analysis error: {e}")
-        # Return default scores
         return {
-            "facial_geometry": 50,
-            "feature_proportions": 50,
-            "skin_quality": 50,
-            "dimorphism": 50,
+            "ratings": {
+                "facial_geometry": 5.0,
+                "feature_proportions": 5.0,
+                "skin_quality": 5.0,
+                "dimorphism": 5.0
+            },
+            "improvements": [
+                {"category": "general", "improvement": "Ensure clear, well-lit photo", "priority": 1},
+                {"category": "general", "improvement": "Face should be front-facing", "priority": 2},
+                {"category": "general", "improvement": "Avoid heavy filters", "priority": 3}
+            ],
             "analysis_details": {
                 "facial_geometry_notes": "Default score due to analysis error",
                 "feature_proportions_notes": "Default score due to analysis error",
@@ -224,10 +246,89 @@ def analyze_face_locally(image_data):
             }
         }
 
+def generate_improvements(fg, fp, sq, dim):
+    """Generate 3 specific improvements based on scores"""
+    improvements = []
+    
+    # Analyze each category and suggest improvements
+    categories = [
+        (fg, "facial_geometry", "Facial Geometry"),
+        (fp, "feature_proportions", "Feature Proportions"),
+        (sq, "skin_quality", "Skin Quality"),
+        (dim, "dimorphism", "Dimorphism")
+    ]
+    
+    # Sort by score (lowest first = most room for improvement)
+    sorted_categories = sorted(categories, key=lambda x: x[0])
+    
+    # Generate improvements for the 3 lowest scoring categories
+    improvement_suggestions = {
+        "facial_geometry": [
+            "Define jawline through targeted exercises or contouring",
+            "Improve cheekbone prominence with proper lighting and angles",
+            "Work on facial symmetry through posture and camera positioning",
+            "Enhance bone structure definition with shadow techniques"
+        ],
+        "feature_proportions": [
+            "Balance eye-to-nose ratio with strategic makeup or grooming",
+            "Improve nose-to-mouth proportion through contouring",
+            "Enhance interocular distance perception with hairstyle framing",
+            "Create better feature harmony with proportional accessories"
+        ],
+        "skin_quality": [
+            "Improve skin clarity with proper skincare routine",
+            "Reduce pore visibility with professional treatments",
+            "Enhance skin texture with hydration and exfoliation",
+            "Address blemishes with targeted skincare products"
+        ],
+        "dimorphism": [
+            "Enhance masculine/feminine features through styling",
+            "Accentuate jawline definition for stronger dimorphism",
+            "Use clothing and accessories to emphasize natural features",
+            "Improve feature contrast for more pronounced dimorphism"
+        ]
+    }
+    
+    # Select the 3 most needed improvements
+    for i, (score, cat_key, cat_name) in enumerate(sorted_categories[:3]):
+        if score < 7:
+            # Pick a relevant suggestion
+            suggestions = improvement_suggestions[cat_key]
+            suggestion = suggestions[i % len(suggestions)]
+            improvements.append({
+                "category": cat_name,
+                "improvement": suggestion,
+                "priority": i + 1
+            })
+        else:
+            # If score is good, suggest maintenance
+            improvements.append({
+                "category": cat_name,
+                "improvement": f"Maintain current {cat_name.lower()} quality",
+                "priority": i + 1
+            })
+    
+    # If we don't have 3 improvements yet, add general ones
+    while len(improvements) < 3:
+        general_suggestions = [
+            "Use better lighting to highlight facial features",
+            "Experiment with different camera angles",
+            "Ensure consistent photo quality across analyses"
+        ]
+        for suggestion in general_suggestions:
+            if suggestion not in [imp["improvement"] for imp in improvements]:
+                improvements.append({
+                    "category": "General",
+                    "improvement": suggestion,
+                    "priority": len(improvements) + 1
+                })
+                break
+    
+    return improvements[:3]  # Ensure exactly 3
+
 def analyze_facial_geometry(landmarks, image_shape):
-    """Analyze facial geometry using landmarks"""
+    """Analyze facial geometry using landmarks (0-10 scale)"""
     try:
-        # Get key points
         chin = landmarks['chin']
         left_eyebrow = landmarks['left_eyebrow']
         right_eyebrow = landmarks['right_eyebrow']
@@ -249,21 +350,20 @@ def analyze_facial_geometry(landmarks, image_shape):
         chin_width = np.linalg.norm(np.array(chin[0]) - np.array(chin[-1]))
         chin_height = np.linalg.norm(np.array(chin[0]) - np.array(chin[len(chin)//2]))
         
-        # Calculate geometry score (0-100)
-        symmetry_score = 100 - min(100, np.linalg.norm(left_eye_center - eye_midpoint) - np.linalg.norm(right_eye_center - eye_midpoint))
-        jawline_score = min(100, (chin_width / max(1, chin_height)) * 20)
+        # Calculate geometry score (0-10)
+        symmetry_score = 10 - min(10, abs(np.linalg.norm(left_eye_center - eye_midpoint) - np.linalg.norm(right_eye_center - eye_midpoint)) * 0.2)
+        jawline_score = min(10, (chin_width / max(1, chin_height)) * 2)
         
         # Combine scores
         geometry_score = (symmetry_score * 0.6) + (jawline_score * 0.4)
-        return max(0, min(100, geometry_score))
+        return max(0, min(10, geometry_score))
         
     except:
-        return 50
+        return 5.0
 
 def analyze_feature_proportions(landmarks):
-    """Analyze feature proportions"""
+    """Analyze feature proportions (0-10 scale)"""
     try:
-        # Get key points
         left_eye = np.array(landmarks['left_eye'])
         right_eye = np.array(landmarks['right_eye'])
         nose_tip = np.array(landmarks['nose_tip'])
@@ -275,64 +375,55 @@ def analyze_feature_proportions(landmarks):
         interocular_distance = np.linalg.norm(np.mean(left_eye, axis=0) - np.mean(right_eye, axis=0))
         nose_to_mouth = np.linalg.norm(np.mean(nose_tip, axis=0) - np.mean(mouth, axis=0))
         
-        # Ideal ratios (approximate)
-        ideal_interocular_ratio = 0.45  # of face width
-        ideal_eye_width_ratio = 0.1  # of interocular distance
+        # Ideal ratios
+        ideal_interocular_ratio = 0.45
+        ideal_eye_width_ratio = 0.1
         
-        # Calculate proportion score
-        eye_symmetry = 100 - abs(eye_width_left - eye_width_right)
-        eye_width_ratio = (eye_width_left / max(1, interocular_distance)) * 100
+        # Calculate proportion score (0-10)
+        eye_symmetry = 10 - abs(eye_width_left - eye_width_right) * 0.2
+        eye_width_ratio = (eye_width_left / max(1, interocular_distance)) * 10
         
-        proportion_score = (eye_symmetry * 0.4) + (eye_width_ratio * 0.3) + 50
-        return max(0, min(100, proportion_score))
+        proportion_score = (eye_symmetry * 0.4) + (eye_width_ratio * 0.3) + 5
+        return max(0, min(10, proportion_score))
         
     except:
-        return 50
+        return 5.0
 
 def analyze_skin_quality(image, landmarks):
-    """Analyze skin quality"""
+    """Analyze skin quality (0-10 scale)"""
     try:
-        # Convert to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         
-        # Get face region
         chin = landmarks['chin']
         left_eyebrow = landmarks['left_eyebrow']
         right_eyebrow = landmarks['right_eyebrow']
         
-        # Create mask from landmarks
         hull = cv2.convexHull(np.array(chin + left_eyebrow + right_eyebrow))
         mask = np.zeros_like(gray)
         cv2.drawContours(mask, [hull], -1, 255, -1)
         
-        # Extract face region
         face_region = gray[mask == 255]
         
         if len(face_region) == 0:
-            return 50
+            return 5.0
             
-        # Calculate skin quality metrics
         mean_intensity = np.mean(face_region)
         std_intensity = np.std(face_region)
         
-        # Lower std = smoother skin
-        smoothness_score = 100 - (std_intensity * 2)
-        brightness_score = min(100, (mean_intensity / 255) * 100)
+        smoothness_score = 10 - (std_intensity * 0.2)
+        brightness_score = min(10, (mean_intensity / 255) * 10)
         
         skin_score = (smoothness_score * 0.7) + (brightness_score * 0.3)
-        return max(0, min(100, skin_score))
+        return max(0, min(10, skin_score))
         
     except:
-        return 50
+        return 5.0
 
 def analyze_dimorphism(landmarks, image):
-    """Analyze sexual dimorphism"""
+    """Analyze sexual dimorphism (0-10 scale)"""
     try:
-        # Get key measurements
-        chin = np.array(landmarks['chin'])
         jawline = np.array(landmarks['jawline'] if 'jawline' in landmarks else landmarks['chin'])
         
-        # Calculate jawline angle (more angular = more masculine)
         if len(jawline) >= 3:
             vectors = []
             for i in range(len(jawline) - 1):
@@ -348,17 +439,16 @@ def analyze_dimorphism(landmarks, image):
             avg_angle = np.mean(angles)
             jawline_angularity = np.degrees(avg_angle)
             
-            # More angular jawline = higher dimorphism
-            dimorphism_score = min(100, jawline_angularity * 2)
+            dimorphism_score = min(10, jawline_angularity * 0.2)
             return dimorphism_score
         else:
-            return 50
+            return 5.0
             
     except:
-        return 50
+        return 5.0
 
 def calculate_overall_psl(facial_geometry, feature_proportions, skin_quality, dimorphism):
-    """Calculate weighted overall PSL score"""
+    """Calculate weighted overall PSL score (0-10)"""
     overall = (
         facial_geometry * SCORING_WEIGHTS['facial_geometry'] +
         feature_proportions * SCORING_WEIGHTS['feature_proportions'] +
@@ -368,11 +458,10 @@ def calculate_overall_psl(facial_geometry, feature_proportions, skin_quality, di
     return overall
 
 @anvil.server.callable
-@anvil.server background_task
+@anvil.server.background_task
 async def rate_face(image_data):
     """Main function to rate a face and return results"""
     try:
-        # Analyze the face
         analysis = analyze_face_with_nvidia(image_data)
         
         if 'error' in analysis:
@@ -381,13 +470,21 @@ async def rate_face(image_data):
                 'error': analysis['error']
             }
         
-        # Extract scores
-        facial_geometry = float(analysis.get('facial_geometry', 50))
-        feature_proportions = float(analysis.get('feature_proportions', 50))
-        skin_quality = float(analysis.get('skin_quality', 50))
-        dimorphism = float(analysis.get('dimorphism', 50))
+        # Extract ratings (0-10)
+        ratings = analysis.get('ratings', {})
+        facial_geometry = float(ratings.get('facial_geometry', 5.0))
+        feature_proportions = float(ratings.get('feature_proportions', 5.0))
+        skin_quality = float(ratings.get('skin_quality', 5.0))
+        dimorphism = float(ratings.get('dimorphism', 5.0))
         
-        # Calculate overall score
+        # Extract improvements
+        improvements = analysis.get('improvements', [
+            {"category": "General", "improvement": "Use better lighting", "priority": 1},
+            {"category": "General", "improvement": "Ensure face is clearly visible", "priority": 2},
+            {"category": "General", "improvement": "Avoid heavy filters", "priority": 3}
+        ])
+        
+        # Calculate overall score (0-10)
         overall_score = calculate_overall_psl(
             facial_geometry, feature_proportions, skin_quality, dimorphism
         )
@@ -406,7 +503,8 @@ async def rate_face(image_data):
             overall_psl_score=overall_score,
             percentile=percentile,
             timestamp=time.time(),
-            analysis_data=analysis
+            analysis_data=analysis,
+            improvements=improvements
         )
         rating.save()
         
@@ -415,12 +513,15 @@ async def rate_face(image_data):
         
         return {
             'success': True,
-            'facial_geometry': facial_geometry,
-            'feature_proportions': feature_proportions,
-            'skin_quality': skin_quality,
-            'dimorphism': dimorphism,
+            'ratings': {
+                'facial_geometry': facial_geometry,
+                'feature_proportions': feature_proportions,
+                'skin_quality': skin_quality,
+                'dimorphism': dimorphism
+            },
             'overall_psl_score': overall_score,
             'percentile': percentile,
+            'improvements': improvements,
             'analysis_details': analysis.get('analysis_details', {})
         }
         

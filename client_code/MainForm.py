@@ -83,22 +83,27 @@ class MainForm(MainFormTemplate):
         # Show the results section
         self.results_section.visible = True
         
-        # Extract scores
-        facial_geometry = result.get('facial_geometry', 0)
-        feature_proportions = result.get('feature_proportions', 0)
-        skin_quality = result.get('skin_quality', 0)
-        dimorphism = result.get('dimorphism', 0)
+        # Extract ratings (now 0-10)
+        ratings = result.get('ratings', {})
+        facial_geometry = ratings.get('facial_geometry', 0)
+        feature_proportions = ratings.get('feature_proportions', 0)
+        skin_quality = ratings.get('skin_quality', 0)
+        dimorphism = ratings.get('dimorphism', 0)
         overall_score = result.get('overall_psl_score', 0)
         percentile = result.get('percentile', 0)
+        improvements = result.get('improvements', [])
         
-        # Update the UI with scores
-        self.overall_score_value.text = f"{overall_score:.1f}"
+        # Update the UI with scores (out of 10)
+        self.overall_score_value.text = f"{overall_score:.1f}/10"
         self.percentile_value.text = self.get_percentile_suffix(percentile)
         
-        self.facial_geometry_score.text = f"{facial_geometry:.1f}"
-        self.feature_proportions_score.text = f"{feature_proportions:.1f}"
-        self.skin_quality_score.text = f"{skin_quality:.1f}"
-        self.dimorphism_score.text = f"{dimorphism:.1f}"
+        self.facial_geometry_score.text = f"{facial_geometry:.1f}/10"
+        self.feature_proportions_score.text = f"{feature_proportions:.1f}/10"
+        self.skin_quality_score.text = f"{skin_quality:.1f}/10"
+        self.dimorphism_score.text = f"{dimorphism:.1f}/10"
+        
+        # Display improvements
+        self.display_improvements(improvements)
         
         # Scroll to results
         self.main_container.scroll_to_component(self.results_section)
@@ -109,6 +114,26 @@ class MainForm(MainFormTemplate):
         
         # Enable the new analysis button
         self.analyze_button.enabled = True
+    
+    def display_improvements(self, improvements):
+        """Display the 3 improvements"""
+        # Sort improvements by priority
+        sorted_improvements = sorted(improvements, key=lambda x: x.get('priority', 0))
+        
+        # Update improvement labels
+        for i, improvement in enumerate(sorted_improvements[:3]):
+            category = improvement.get('category', 'General')
+            improvement_text = improvement.get('improvement', 'No improvement suggestion')
+            
+            # Format the text with priority number and category
+            formatted_text = f"{i+1}. [{category}] {improvement_text}"
+            
+            if i == 0:
+                self.improvement_1_text.text = formatted_text
+            elif i == 1:
+                self.improvement_2_text.text = formatted_text
+            elif i == 2:
+                self.improvement_3_text.text = formatted_text
     
     def get_percentile_suffix(self, percentile):
         """Get the proper suffix for percentile"""
@@ -130,6 +155,11 @@ class MainForm(MainFormTemplate):
         self.results_section.visible = False
         self.progress_bar.visible = False
         self.progress_bar.value = 0
+        
+        # Reset improvement texts
+        self.improvement_1_text.text = '1. Loading...'
+        self.improvement_2_text.text = '2. Loading...'
+        self.improvement_3_text.text = '3. Loading...'
     
     def load_leaderboard(self):
         """Load leaderboard data"""
@@ -141,7 +171,7 @@ class MainForm(MainFormTemplate):
             for i, entry in enumerate(leaderboard_data, 1):
                 grid_data.append({
                     'Rank': i,
-                    'Overall Score': f"{entry['overall_psl_score']:.1f}",
+                    'Overall Score': f"{entry['overall_psl_score']:.1f}/10",
                     'Percentile': f"{entry['percentile']:.0f}th"
                 })
             
